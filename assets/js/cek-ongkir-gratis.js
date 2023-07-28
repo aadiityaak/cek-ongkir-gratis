@@ -1,0 +1,117 @@
+// Check if data is already in local storage
+if (
+  !localStorage.getItem("data_city") ||
+  !localStorage.getItem("data_country") ||
+  !localStorage.getItem("data_state")
+) {
+  // Fetch the JSON data from files
+  fetch(cek_ongkir_gratis_data.data_city_url)
+    .then((response) => response.json())
+    .then((data) => {
+      // Save the data to local storage
+      localStorage.setItem("data_city", JSON.stringify(data));
+    });
+
+  fetch(cek_ongkir_gratis_data.data_country_url)
+    .then((response) => response.json())
+    .then((data) => {
+      // Save the data to local storage
+      localStorage.setItem("data_country", JSON.stringify(data));
+    });
+
+  fetch(cek_ongkir_gratis_data.data_state_url)
+    .then((response) => response.json())
+    .then((data) => {
+      // Save the data to local storage
+      localStorage.setItem("data_state", JSON.stringify(data));
+    });
+}
+
+// Ambil data dari local storage dan simpan dalam variabel
+var dataState = JSON.parse(localStorage.getItem("data_state"));
+var dataCity = JSON.parse(localStorage.getItem("data_city"));
+
+// Fungsi untuk menyimpan ID origin dan destination di cookie
+function setOriginDestinationIds(originId, destinationId) {
+  document.cookie = `originId=${originId}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
+  document.cookie = `destinationId=${destinationId}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
+}
+
+// Fungsi untuk mendapatkan ID origin dan destination dari cookie
+function getOriginDestinationIds() {
+  const cookieValue = document.cookie
+    .split("; ")
+    .find(
+      (row) => row.startsWith("originId=") || row.startsWith("destinationId=")
+    );
+  if (cookieValue) {
+    const [originId, destinationId] = cookieValue.split("=");
+    return { originId, destinationId };
+  } else {
+    return { originId: null, destinationId: null };
+  }
+}
+
+// Inisialisasi elemen input dengan autocomplete
+jQuery(document).ready(function ($) {
+  // Inisialisasi autocomplete untuk input origin
+  $("#origin").autocomplete({
+    source: dataCity,
+    select: function (event, ui) {
+      const originId = ui.item.id; // Ganti 'id' dengan properti yang sesuai di dataCity
+      // Simpan ID origin ke cookie
+      setOriginDestinationIds(
+        originId,
+        getOriginDestinationIds().destinationId
+      );
+    },
+  });
+
+  // Inisialisasi autocomplete untuk input destination
+  $("#destination").autocomplete({
+    source: dataCity,
+    select: function (event, ui) {
+      const destinationId = ui.item.id; // Ganti 'id' dengan properti yang sesuai di dataCity
+      // Simpan ID destination ke cookie
+      setOriginDestinationIds(
+        getOriginDestinationIds().originId,
+        destinationId
+      );
+    },
+  });
+
+  // Event handler saat tombol "Cek Ongkir" diklik
+  $("#cek-ongkir-button").on("click", function (event) {
+    event.preventDefault(); // Mencegah aksi default dari tombol submit
+
+    // Mendapatkan ID origin dan destination dari cookie
+    const originId = getOriginDestinationIds().originId;
+    const destinationId = getOriginDestinationIds().destinationId;
+
+    // Cek apakah ID origin dan destination telah disimpan di cookie
+    if (originId && destinationId) {
+      // Data yang akan dikirimkan dalam permintaan AJAX
+      const data = {
+        action: "cek_ongkir", // Nama action yang akan diproses oleh fungsi PHP
+        origin: originId,
+        destination: destinationId,
+        weight: $("#weight").val(), // Ambil nilai weight dari elemen input
+      };
+
+      // Kirim permintaan AJAX menggunakan jQuery.post()
+      jQuery
+        .post(cek_ongkir_gratis_data.ajaxurl, data, function (response) {
+          // Callback saat permintaan berhasil
+          // Lakukan sesuatu dengan data yang diterima dari server
+          console.log(response);
+        })
+        .fail(function (xhr, status, error) {
+          // Callback saat permintaan gagal
+          console.error(error);
+        });
+    } else {
+      // Jika ID origin atau destination tidak ditemukan di cookie, beri tahu pengguna atau lakukan tindakan lain
+      console.error("ID origin atau destination tidak ditemukan di cookie.");
+    }
+  });
+});
