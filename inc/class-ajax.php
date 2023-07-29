@@ -1,6 +1,8 @@
 <?php
 class Ajax_Response_Handler {
-    private $api_key = 'your-api-key'; // Ganti dengan API key Anda dari RajaOngkir
+    private function get_api_key() {
+        return get_theme_mod('rajaongkir_api_key');
+    }
 
     public function __construct() {
         // Add action for handling AJAX requests
@@ -22,12 +24,43 @@ class Ajax_Response_Handler {
         wp_send_json($response);
     }
 
-    // Fungsi untuk mengambil data ongkos kirim dari semua ekspedisi di API RajaOngkir
+    private function format_shipping_costs($shipping_costs) {
+        $html = '<div class="container">';
+        $html .= '<h3>Shipping Costs</h3>';
+        $html .= '<div class="row">';
+    
+        foreach ($shipping_costs as $courier => $costs) {
+            $html .= '<div class="col-md-4">';
+            $html .= '<div class="card">';
+            $html .= '<div class="card-body">';
+            $html .= '<h5 class="card-title">' . ucfirst($courier) . '</h5>';
+            $html .= '<ul class="list-group">';
+            
+            foreach ($costs['results'] as $result) {
+                $html .= '<li class="list-group-item">';
+                $html .= 'Service: ' . $result['service'];
+                $html .= '<br>Cost: ' . $result['cost'][0]['value'] . ' ' . $result['cost'][0]['etd'];
+                $html .= '</li>';
+            }
+    
+            $html .= '</ul>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+    
+        $html .= '</div>';
+        $html .= '</div>';
+    
+        return $html;
+    }
+
     private function get_shipping_cost_from_all_couriers($origin, $destination, $weight) {
         $url = "https://pro.rajaongkir.com/api/cost";
         $couriers = array('jne', 'tiki', 'pos'); // Daftar kurir yang akan digunakan, Anda dapat menambahkan kurir lain sesuai kebutuhan Anda
 
         $shipping_costs = array();
+        $api_key = $this->get_api_key(); // Ambil API key setiap kali diperlukan
 
         foreach ($couriers as $courier) {
             $data = "origin={$origin}&originType=city&destination={$destination}&destinationType=subdistrict&weight={$weight}&courier={$courier}";
@@ -44,7 +77,7 @@ class Ajax_Response_Handler {
                 CURLOPT_POSTFIELDS => $data,
                 CURLOPT_HTTPHEADER => array(
                     "content-type: application/x-www-form-urlencoded",
-                    "key: " . $this->api_key,
+                    "key: " . $api_key, // Gunakan API key yang diambil dari fungsi get_api_key()
                 ),
             ));
 
@@ -58,9 +91,13 @@ class Ajax_Response_Handler {
             }
         }
 
-        return $shipping_costs;
+        // Kirimkan respon HTML ke sisi klien
+        echo $formatted_response;
+        
+        // Hentikan eksekusi lebih lanjut karena ini adalah permintaan AJAX
+        wp_die();
     }
 }
 
-// Inisialisasi class
+// Initialize the class
 $ajax_response_handler = new Ajax_Response_Handler();

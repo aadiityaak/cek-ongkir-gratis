@@ -23,6 +23,7 @@ if (!class_exists('cek_ongkir_gratis')) {
             // Load other classes from the 'inc' folder
             require_once plugin_dir_path(__FILE__) . 'inc/class-shortcode.php';
             require_once plugin_dir_path(__FILE__) . 'inc/class-ajax.php';
+            require_once plugin_dir_path(__FILE__) . 'inc/class-customizer.php';
         }
 
         /**

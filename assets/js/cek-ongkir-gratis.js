@@ -39,17 +39,20 @@ function setOriginDestinationIds(originId, destinationId) {
 
 // Fungsi untuk mendapatkan ID origin dan destination dari cookie
 function getOriginDestinationIds() {
-  const cookieValue = document.cookie
-    .split("; ")
-    .find(
-      (row) => row.startsWith("originId=") || row.startsWith("destinationId=")
-    );
-  if (cookieValue) {
-    const [originId, destinationId] = cookieValue.split("=");
-    return { originId, destinationId };
-  } else {
-    return { originId: null, destinationId: null };
-  }
+  const cookies = document.cookie.split("; ");
+  let originId = null;
+  let destinationId = null;
+
+  cookies.forEach((cookie) => {
+    const [name, value] = cookie.split("=");
+    if (name === "originId") {
+      originId = value;
+    } else if (name === "destinationId") {
+      destinationId = value;
+    }
+  });
+
+  return { originId, destinationId };
 }
 
 // Inisialisasi elemen input dengan autocomplete
@@ -103,7 +106,7 @@ jQuery(document).ready(function ($) {
         .post(cek_ongkir_gratis_data.ajaxurl, data, function (response) {
           // Callback saat permintaan berhasil
           // Lakukan sesuatu dengan data yang diterima dari server
-          console.log(response);
+          $("#return-ongkir").html(response);
         })
         .fail(function (xhr, status, error) {
           // Callback saat permintaan gagal

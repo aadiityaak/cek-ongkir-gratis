@@ -13,6 +13,7 @@ function cek_ongkir_gratis_enqueue_scripts() {
 
     // Enqueue the JavaScript file
     wp_enqueue_script('cek-ongkir-gratis-script', plugins_url('assets/js/cek-ongkir-gratis.js', dirname(__FILE__)), array('jquery-ui-autocomplete'), '1.0', true);
+    wp_enqueue_script('cek-ongkir-gratis-customizer', plugins_url('assets/js/customizer.js', dirname(__FILE__)), array('jquery-ui-autocomplete'), '1.0', true);
     
     // Pass data to JavaScript
     wp_localize_script('cek-ongkir-gratis-script', 'cek_ongkir_gratis_data', array(

@@ -52,6 +52,9 @@ class Shortcode_Class
                 </div>
                 <button id="cek-ongkir-button" type="submit" class="btn btn-primary">Cek Ongkir</button>
             </form>
+            <div id="return-ongkir">
+
+            </div>
         <?php
         return ob_get_clean();
     }
