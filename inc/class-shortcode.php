@@ -52,6 +52,16 @@ class Shortcode_Class
                 </div>
                 <button id="cek-ongkir-button" type="submit" class="btn btn-primary">Cek Ongkir</button>
             </form>
+            <!-- Add Lottie animation script -->
+            <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+            <!-- Add a container for the Lottie animation -->
+            <div id="lottie-container" class="loading-animation text-center rounded bg-white" style="display: none;">
+            <lottie-player class="mx-auto" src="https://lottie.host/cc07a8b7-7e79-4a8b-a319-731e72b99b82/Z3KcWmbEk3.json"
+                background="#ffffff" speed="1" style="width: 300px; height: 300px;" loop autoplay
+                direction="1" mode="normal">
+            </lottie-player>
+            </div>
             <div id="return-ongkir">
 
             </div>

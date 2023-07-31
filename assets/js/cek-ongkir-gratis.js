@@ -86,6 +86,7 @@ jQuery(document).ready(function ($) {
   // Event handler saat tombol "Cek Ongkir" diklik
   $("#cek-ongkir-button").on("click", function (event) {
     event.preventDefault(); // Mencegah aksi default dari tombol submit
+    $(".loading-animation").show();
 
     // Mendapatkan ID origin dan destination dari cookie
     const originId = getOriginDestinationIds().originId;
@@ -106,6 +107,7 @@ jQuery(document).ready(function ($) {
         .post(cek_ongkir_gratis_data.ajaxurl, data, function (response) {
           // Callback saat permintaan berhasil
           // Lakukan sesuatu dengan data yang diterima dari server
+          $(".loading-animation").hide();
           $("#return-ongkir").html(response);
         })
         .fail(function (xhr, status, error) {
