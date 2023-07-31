@@ -25,74 +25,101 @@ class Ajax_Response_Handler {
     }
 
     private function format_shipping_costs($shipping_costs) {
-        $html = '<div class="container">';
+        $html = '<div class="mt-4">';
         $html .= '<h3>Shipping Costs</h3>';
-        $html .= '<div class="row">';
+        $html .= '<table class="table table-bordered">';
     
-        foreach ($shipping_costs as $courier => $costs) {
-            $html .= '<div class="col-md-4">';
-            $html .= '<div class="card">';
-            $html .= '<div class="card-body">';
-            $html .= '<h5 class="card-title">' . ucfirst($courier) . '</h5>';
-            $html .= '<ul class="list-group">';
-            
-            foreach ($costs['results'] as $result) {
-                $html .= '<li class="list-group-item">';
-                $html .= 'Service: ' . $result['service'];
-                $html .= '<br>Cost: ' . $result['cost'][0]['value'] . ' ' . $result['cost'][0]['etd'];
-                $html .= '</li>';
+        // Loop through each courier and its costs
+        foreach ($shipping_costs['rajaongkir']['results'] as $result) {
+            $courier = $result['name'];
+            $html .= '<tr>';
+            $html .= '<th colspan="2">' . $courier . '</th>';
+            $html .= '</tr>';
+    
+            // Loop through each service and its cost
+            foreach ($result['costs'] as $service) {
+                $html .= '<tr>';
+                $html .= '<td>Service: ' . $service['service'] . '</td>';
+                $html .= '<td>Cost: ' . $service['cost'][0]['value'] . ' ' . $service['cost'][0]['etd'] . '</td>';
+                $html .= '</tr>';
             }
-    
-            $html .= '</ul>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
         }
     
-        $html .= '</div>';
+        $html .= '</table>';
         $html .= '</div>';
     
         return $html;
     }
+    
 
     private function get_shipping_cost_from_all_couriers($origin, $destination, $weight) {
         $url = "https://pro.rajaongkir.com/api/cost";
-        $couriers = array('jne', 'tiki', 'pos'); // Daftar kurir yang akan digunakan, Anda dapat menambahkan kurir lain sesuai kebutuhan Anda
+        $couriers = [
+            'pos'       => 'POS Indonesia (POS)',
+            'lion'      => 'Lion Parcel (LION)',
+            'ninja'     => 'Ninja Xpress (NINJA)',
+            'ide'       => 'ID Express (IDE)',
+            'sicepat'   => 'SiCepat Express (SICEPAT)',
+            'sap'       => 'SAP Express (SAP)',
+            'ncs'       => 'Nusantara Card Semesta (NCS)',
+            'anteraja'  => 'AnterAja (ANTERAJA)',
+            'rex'       => 'Royal Express Indonesia (REX)',
+            'jtl'       => 'JTL Express (JTL)',
+            'sentral'   => 'Sentral Cargo (SENTRAL)',
+            'jne'       => 'Jalur Nugraha Ekakurir (JNE)',
+            'tiki'      => 'Citra Van Titipan Kilat (TIKI)',
+            'rpx'       => 'RPX Holding (RPX)',
+            'pandu'     => 'Pandu Logistics (PANDU)',
+            'wahana'    => 'Wahana Prestasi Logistik (WAHANA)',
+            'jnt'       => 'J&T Express (J&T)',
+            'pahala'    => 'Pahala Kencana Express (PAHALA)',
+            // 'slis'      => 'Solusi Ekspres (SLIS)',
+            'dse'       => '21 Express (DSE)',
+            'first'     => 'First Logistics (FIRST)',
+            'star'      => 'Star Cargo (STAR)',
+            'idl'       => 'IDL Cargo (IDL)',
+            // 'jet'       => 'JET Express (JET)',
+            // 'esl'       => 'Eka Sari Lorena (ESL)',
+            // 'pcp'       => 'Priority Cargo and Package (PCP)',
+            // 'cahaya'    => 'Cahaya Logistik (CAHAYA)',
+            // 'indah'     => 'Indah Logistic (INDAH)',
+        ];
+        
+        $couriers = implode(':', array_keys($couriers));
 
         $shipping_costs = array();
         $api_key = $this->get_api_key(); // Ambil API key setiap kali diperlukan
 
-        foreach ($couriers as $courier) {
-            $data = "origin={$origin}&originType=city&destination={$destination}&destinationType=subdistrict&weight={$weight}&courier={$courier}";
+        $data = "origin={$origin}&originType=city&destination={$destination}&destinationType=subdistrict&weight={$weight}&courier={$couriers}";
 
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "POST",
-                CURLOPT_POSTFIELDS => $data,
-                CURLOPT_HTTPHEADER => array(
-                    "content-type: application/x-www-form-urlencoded",
-                    "key: " . $api_key, // Gunakan API key yang diambil dari fungsi get_api_key()
-                ),
-            ));
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => array(
+                "content-type: application/x-www-form-urlencoded",
+                "key: " . $api_key, // Gunakan API key yang diambil dari fungsi get_api_key()
+            ),
+        ));
 
-            $response = curl_exec($curl);
-            $err = curl_error($curl);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
 
-            curl_close($curl);
+        curl_close($curl);
 
-            if (!$err) {
-                $shipping_costs[$courier] = json_decode($response, true);
-            }
+        if (!$err) {
+            $shipping_costs = json_decode($response, true);
         }
 
         // Kirimkan respon HTML ke sisi klien
-        echo $formatted_response;
+        $result = $this->format_shipping_costs($shipping_costs);
+        echo $result;
         
         // Hentikan eksekusi lebih lanjut karena ini adalah permintaan AJAX
         wp_die();

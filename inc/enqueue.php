@@ -24,3 +24,9 @@ function cek_ongkir_gratis_enqueue_scripts() {
     ));
 }
 add_action('wp_enqueue_scripts', 'cek_ongkir_gratis_enqueue_scripts');
+
+function my_enqueue_styles() {
+    // Memuat CSS dari jQuery UI
+    wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.13.0/themes/smoothness/jquery-ui.css');
+}
+add_action('wp_enqueue_scripts', 'my_enqueue_styles');
