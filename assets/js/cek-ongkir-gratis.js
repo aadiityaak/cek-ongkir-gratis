@@ -5,26 +5,64 @@ if (
   !localStorage.getItem("data_state")
 ) {
   // Fetch the JSON data from files
-  fetch(cek_ongkir_gratis_data.data_city_url)
-    .then((response) => response.json())
-    .then((data) => {
+  Promise.all([
+    fetch(cek_ongkir_gratis_data.data_city_url).then((response) =>
+      response.json()
+    ),
+    fetch(cek_ongkir_gratis_data.data_country_url).then((response) =>
+      response.json()
+    ),
+    fetch(cek_ongkir_gratis_data.data_state_url).then((response) =>
+      response.json()
+    ),
+  ])
+    .then(([dataCity, dataCountry, dataState]) => {
       // Save the data to local storage
-      localStorage.setItem("data_city", JSON.stringify(data));
+      localStorage.setItem("data_city", JSON.stringify(dataCity));
+      localStorage.setItem("data_country", JSON.stringify(dataCountry));
+      localStorage.setItem("data_state", JSON.stringify(dataState));
+
+      // Inisialisasi elemen input dengan autocomplete setelah data tersedia
+      initializeAutocomplete(dataCity);
+    })
+    .catch((error) => {
+      console.error("Failed to fetch and save data:", error);
+    });
+} else {
+  // Data is available in local storage, initialize autocomplete directly
+  const dataCity = JSON.parse(localStorage.getItem("data_city"));
+  initializeAutocomplete(dataCity);
+}
+function initializeAutocomplete(dataCity) {
+  // Inisialisasi elemen input dengan autocomplete
+  jQuery(document).ready(function ($) {
+    initializeAutocomplete(dataCity);
+    // Inisialisasi autocomplete untuk input origin
+    $("#origin").autocomplete({
+      source: dataCity,
+      select: function (event, ui) {
+        const originId = ui.item.id; // Ganti 'id' dengan properti yang sesuai di dataCity
+        // Simpan ID origin ke cookie
+        setOriginDestinationIds(
+          originId,
+          getOriginDestinationIds().destinationId
+        );
+      },
     });
 
-  fetch(cek_ongkir_gratis_data.data_country_url)
-    .then((response) => response.json())
-    .then((data) => {
-      // Save the data to local storage
-      localStorage.setItem("data_country", JSON.stringify(data));
+    // Inisialisasi autocomplete untuk input destination
+    $("#destination").autocomplete({
+      source: dataCity,
+      select: function (event, ui) {
+        const destinationId = ui.item.id; // Ganti 'id' dengan properti yang sesuai di dataCity
+        // Simpan ID destination ke cookie
+        setOriginDestinationIds(
+          getOriginDestinationIds().originId,
+          destinationId
+        );
+      },
     });
-
-  fetch(cek_ongkir_gratis_data.data_state_url)
-    .then((response) => response.json())
-    .then((data) => {
-      // Save the data to local storage
-      localStorage.setItem("data_state", JSON.stringify(data));
-    });
+  });
 }
 
 // Ambil data dari local storage dan simpan dalam variabel
@@ -58,30 +96,7 @@ function getOriginDestinationIds() {
 // Inisialisasi elemen input dengan autocomplete
 jQuery(document).ready(function ($) {
   // Inisialisasi autocomplete untuk input origin
-  $("#origin").autocomplete({
-    source: dataCity,
-    select: function (event, ui) {
-      const originId = ui.item.id; // Ganti 'id' dengan properti yang sesuai di dataCity
-      // Simpan ID origin ke cookie
-      setOriginDestinationIds(
-        originId,
-        getOriginDestinationIds().destinationId
-      );
-    },
-  });
-
-  // Inisialisasi autocomplete untuk input destination
-  $("#destination").autocomplete({
-    source: dataCity,
-    select: function (event, ui) {
-      const destinationId = ui.item.id; // Ganti 'id' dengan properti yang sesuai di dataCity
-      // Simpan ID destination ke cookie
-      setOriginDestinationIds(
-        getOriginDestinationIds().originId,
-        destinationId
-      );
-    },
-  });
+  initializeAutocomplete(dataCity);
 
   // Event handler saat tombol "Cek Ongkir" diklik
   $("#cek-ongkir-button").on("click", function (event) {
