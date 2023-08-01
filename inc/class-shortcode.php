@@ -41,10 +41,12 @@ class Shortcode_Class
                 <div class="mb-3">
                     <label for="origin" class="form-label">Origin:</label>
                     <input type="text" name="origin" id="origin" class="form-control" required>
+                    <small class="text-secondary">*Refresh halaman jika autocomplete tidak bekerja</small>
                 </div>
                 <div class="mb-3">
                     <label for="destination" class="form-label">Destination:</label>
                     <input type="text" name="destination" id="destination" class="form-control" required>
+                    <small class="text-secondary">*Refresh halaman jika autocomplete tidak bekerja</small>
                 </div>
                 <div class="mb-3">
                     <label for="weight" class="form-label">Weight (in grams):</label>
